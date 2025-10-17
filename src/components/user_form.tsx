@@ -19,6 +19,8 @@ const formSchema = z.object({
 })
  
 export function UserForm() {
+  const { setUser, user } = useUser();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -28,7 +30,6 @@ export function UserForm() {
     },
   })
 
-  const { setUser } = useUser();
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // Try login first
@@ -41,7 +42,7 @@ export function UserForm() {
       if (loginResponse.ok) {
         const existingUser = await loginResponse.json();
         setUser(existingUser);
-        toast.success("Logged in successfully!");
+        toast.success(`Hi ${existingUser.name}!`);
         return;
       }
       
@@ -65,7 +66,7 @@ export function UserForm() {
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-1/2 font-mono border-1 border-black rounded-lg p-8 bg-stone-50">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-1/2 font-mono border-1 border-[#0000001c] rounded-lg p-8 bg-stone-50">
             <FormField
             control={form.control}
             name="name"

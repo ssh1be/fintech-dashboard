@@ -42,3 +42,32 @@ export async function POST(request: NextRequest) {
         }, { status: 500 })
     }
 }
+
+export async function GET(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('userId');
+        
+        if (!userId) {
+          return NextResponse.json({ error: 'userId required' }, { status: 400 });
+        }
+        console.log('Recieved userId', userId);
+        
+        const { data, error } = await supabase
+            .from("accounts")
+            .select("*")
+            .eq("userId", userId)
+        if (error) {
+            console.error('Supabase error:', error)
+            throw error
+        }
+        // console.log('Account(s):', data);
+        return NextResponse.json(data, {status: 200})
+    } catch (error){
+        console.log('API route error', error);
+        return NextResponse.json({ 
+            error: "Failed to get accounts",
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 })
+    }
+}

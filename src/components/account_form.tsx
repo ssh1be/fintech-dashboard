@@ -9,28 +9,36 @@ import { toast } from "sonner"
 import { useUser } from "@/context/UserContext"
 import { Spinner } from "./ui/spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { Value } from "@radix-ui/react-select"
+import { cn } from "@/lib/utils"
 
 const formSchema = z.object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    type: z.enum(["checking", "savings", "credit card", "investment"]),
-    balance: z.number(),
-    overdraftLimit: z.number().optional(),
-    interestRate: z.number().optional(),
-    minimumBalance: z.number().optional(),
-    creditLimit: z.number().optional(),
-    apr: z.number().optional(),
+    name: z.string().min(1, { message: "Name is required" }),
+    type: z.enum(["checking", "savings", "credit card", "investment"], {message: "Type is required"}),
+    balance: z.coerce.number<number>({ message: "Balance is required" }),
+    overdraftLimit: z.coerce.number<number>().min(0).optional(),
+    interestRate: z.coerce.number<number>().min(0).max(100).optional(),
+    minimumBalance: z.coerce.number<number>().min(0).optional(),
+    creditLimit: z.coerce.number<number>().min(0).optional(),
+    apr: z.coerce.number<number>().min(0).max(100).optional(),
 })
 
-export function AccountForm() {
+export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, className?: string }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
-            balance: 0,
-        },
+            type: undefined,
+            balance: undefined,
+            overdraftLimit: undefined,
+            interestRate: undefined,
+            minimumBalance: undefined,
+            creditLimit: undefined,
+            apr: undefined,
+        }
     })
 
-    const { user } = useUser();
+    const { user, addAccount } = useUser();
     const accountType = form.watch("type");
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -48,16 +56,18 @@ export function AccountForm() {
             if (!createResoponse.ok) throw new Error('Failed to create account');
 
             const account = await createResoponse.json();
+            addAccount(account);
             console.log('Created account:', account)
             toast.success("Account created successfully!");
             form.reset();
+            onSuccess?.();
         } catch (error){
             toast.error("Something went wrong");
         }
     }
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-1/2 font-mono border-1 border-black rounded-lg p-8 bg-stone-50">
+            <form onSubmit={form.handleSubmit(onSubmit)} className={cn("space-y-8 w-1/2 font-mono border-1 border-[#0000001c] rounded-lg p-8 bg-stone-50", className)}>
                 <FormField
                     control={form.control}
                     name="name"
@@ -65,7 +75,7 @@ export function AccountForm() {
                         <FormItem>
                             <FormLabel>Account Name</FormLabel>
                             <FormControl>
-                                <Input type="text" placeholder="My checking account" {...field} />
+                                <Input type="text" placeholder="My bank account" {...field} />
                             </FormControl>
                             <FormDescription>This is the name of your account.</FormDescription>
                             <FormMessage />
@@ -92,7 +102,6 @@ export function AccountForm() {
                                                 </SelectContent>
                                             </SelectTrigger>
                                         </FormControl>
-                                        <FormMessage />
                                     </FormItem>
                                 </Select>
                             </FormControl>
@@ -108,7 +117,12 @@ export function AccountForm() {
                         <FormItem>
                             <FormLabel>Account Balance ({user?.currency})</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="1000" {...field} />
+                                <Input 
+                                    type="number"
+                                    placeholder="1000"
+                                    value={field.value ?? ""} // convert undefined to an empty string
+                                    onChange={(e) => field.onChange(e.target.value || undefined)}
+                                    />
                             </FormControl>
                             <FormDescription>The current balance of your account.</FormDescription>
                             <FormMessage />
@@ -116,7 +130,6 @@ export function AccountForm() {
                     )}
                 />
                 {accountType === 'checking' && (
-                <>
                 <FormField
                     control={form.control}
                     name="overdraftLimit"
@@ -124,72 +137,96 @@ export function AccountForm() {
                         <FormItem>
                             <FormLabel>Overdraft Limit <i>(optional)</i></FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="500" {...field} />
+                            <Input 
+                                type="number"
+                                placeholder="500"
+                                value={field.value ?? ""} // convert undefined to an empty string
+                                onChange={(e) => field.onChange(e.target.value || undefined)}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                </>
                 )}
                 {accountType === 'savings' && (
                 <>
-                <FormField
-                    control={form.control}
-                    name="interestRate"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Interest Rate % <i>(optional)</i></FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="1.5%" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="minimumBalance"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Minimum Balance <i>(optional)</i></FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="200" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="interestRate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Interest Rate % <i>(optional)</i></FormLabel>
+                                <FormControl>
+                                <Input 
+                                    type="number"
+                                    placeholder="1.5%"
+                                    value={field.value ?? ""} // convert undefined to an empty string
+                                    onChange={(e) => field.onChange(e.target.value || undefined)}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="minimumBalance"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Minimum Balance <i>(optional)</i></FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number"
+                                        placeholder="200"
+                                        value={field.value ?? ""} // convert undefined to an empty string
+                                        onChange={(e) => field.onChange(e.target.value || undefined)}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </>
                 )}
                 {accountType === 'credit card' && (
                 <>
-                <FormField
-                    control={form.control}
-                    name="creditLimit"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Credit Limit <i>(optional)</i></FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="200" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="apr"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>APR % <i>(optional)</i></FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="200" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="creditLimit"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Credit Limit <i>(optional)</i></FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number"
+                                        placeholder="2000"
+                                        value={field.value ?? ""} // convert undefined to an empty string
+                                        onChange={(e) => field.onChange(e.target.value || undefined)}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="apr"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>APR % <i>(optional)</i></FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number"
+                                        placeholder="17.5%"
+                                        value={field.value ?? ""} // convert undefined to an empty string
+                                        onChange={(e) => field.onChange(e.target.value || undefined)}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </>
                 )}
                 <Button 
