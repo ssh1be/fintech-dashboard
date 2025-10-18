@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { User, Account } from '@/lib/types';
+import { Spinner } from '@/components/ui/spinner';
 
 const UserContext = createContext<{
   user: User | null;
@@ -8,20 +9,38 @@ const UserContext = createContext<{
   setUser: (user: User | null) => void;
   setAccounts: (accounts: Account[]) => void;
   addAccount: (account: Account) => void;
+  fetchUserAccounts: (userId: string) => void;
   logout: () => void;
+  isLoading: boolean;
 }>({ 
   user: null, 
   accounts: [],
   setUser: () => {},
   setAccounts: () => {},
   addAccount: () => {},
+  fetchUserAccounts: () => {},
   logout: () => {},
+  isLoading: true,
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Load user and accounts from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      // Fetch fresh data from API
+      fetchUserAccounts(parsedUser.id);
+    }
+    
+    setIsLoading(false);
+  }, []); // Only run once on mount
 
   // Fetch accounts from API
   async function fetchUserAccounts(userId: string) {
@@ -44,31 +63,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Load user and accounts from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      // Fetch fresh data from API
-      fetchUserAccounts(parsedUser.id);
-    }
-    
-    setIsLoading(false);
-  }, []); // Only run once on mount
-
-  // Save user to localStorage whenever it changes
-  const updateUser = (newUser: User | null) => {
-    setUser(newUser);
-    if (newUser) {
-      localStorage.setItem('user', JSON.stringify(newUser));
-      // Fetch accounts when user logs in
-      fetchUserAccounts(newUser.id);
-    } else {
-      localStorage.removeItem('user');
-    }
-  };
 
   // Add a single account
   const addAccount = (newAccount: Account) => {
@@ -83,6 +77,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('accounts', JSON.stringify(newAccounts));
   };
 
+  // Save user to localStorage whenever it changes
+  const updateUser = (newUser: User | null) => {
+    setUser(newUser);
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
+      // Fetch accounts when user logs in
+      fetchUserAccounts(newUser.id);
+    } else {
+      localStorage.removeItem('user');
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setAccounts([]);
@@ -91,7 +97,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+    <div className="flex justify-center items-center h-screen text-2xl font-mono">
+      <Spinner className="size-4 animate-spin mr-2" />
+      Loading...
+    </div>);
   }
 
   return (
@@ -102,6 +112,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       addAccount, 
       setAccounts: updateAccounts, 
       logout,
+      fetchUserAccounts,
+      isLoading,
     }}>
       {children}
     </UserContext.Provider>
@@ -109,3 +121,4 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useUser = () => useContext(UserContext);
+

@@ -24,16 +24,14 @@ import { useRouter } from 'next/navigation';
 
 
 export default function Page() {
-  const { logout, accounts, user } = useUser();
+  const { logout, user } = useUser();
   const router = useRouter();
   
   useEffect(() =>{
-    console.log('user', user);
-    console.log('accounts', accounts);
-    if (!user || accounts.length === 0) {
+    if (!user) {
       router.push('/');
     }
-  }, [user, accounts])
+  }, [user])
   
   return (
     <SidebarProvider>
@@ -50,7 +48,7 @@ export default function Page() {
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
-                    Building Your Application
+                    Home
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />

@@ -5,113 +5,85 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  ChevronRight,
   Command,
   Frame,
   GalleryVerticalEnd,
+  ListChecks,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
+  DollarSign,
+  HomeIcon,
+  Plus,
+  Upload,
+  History,
+  Pencil,
+  Trash,
+  CreditCard,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { AccountSwitcher } from "@/components/account-switcher"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar"
 
 import { useUser } from '@/context/UserContext';
-import { Account } from '@/lib/types';
+import { Spinner } from './ui/spinner';
 
 const dataOld = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "null",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Playground",
+      title: "Transactions",
       url: "#",
-      icon: SquareTerminal,
+      icon: DollarSign,
       isActive: true,
       items: [
         {
+          title: "Add new",
+          url: "#",
+          icon: Plus,
+        },
+        {
+          title: "Import",
+          url: "#",
+          icon: Upload,
+        },
+        {
           title: "History",
           url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          icon: History,
         },
       ],
     },
     {
-      title: "Models",
+      title: "Account",
       url: "#",
-      icon: Bot,
+      icon: CreditCard,
       items: [
         {
-          title: "Genesis",
+          title: "Edit",
           url: "#",
+          icon: Pencil,
         },
         {
-          title: "Explorer",
+          title: "Delete",
           url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          icon: Trash,
         },
       ],
     },
@@ -120,22 +92,7 @@ const dataOld = {
       url: "#",
       icon: Settings2,
       items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+
       ],
     },
   ],
@@ -160,16 +117,35 @@ const dataOld = {
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { accounts } = useUser();
+  const { user, accounts } = useUser();
+  
+  dataOld.user.name = user?.name || '';
+  dataOld.user.email = user?.currency || '';
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher accounts={accounts} />
+        {accounts.length > 0 ? (
+          <AccountSwitcher accounts={accounts} />
+        ) : (
+          <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Spinner className="size-4 animate-spin" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">Loading...</span>
+                <span className="truncate text-xs">Loading...</span>
+              </div>
+              <ChevronRight className="ml-auto" />
+          </SidebarMenuButton>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={dataOld.navMain} />
-        <NavProjects projects={dataOld.projects} />
+        {/* <NavProjects projects={dataOld.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={dataOld.user} />

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ChevronRight } from "lucide-react"
+import { ChevronsUpDown, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ChevronRight, ChevronDown } from "lucide-react"
 import { Account } from "@/lib/types"
 
 import {
@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog"
 import { AccountForm } from "@/components/account_form"
 import { useUser } from "@/context/UserContext"
+import { Spinner } from "./ui/spinner"
 // Map account types to icons
 const accountIcons: Record<string, React.ElementType> = {
   checking: Wallet,
@@ -36,7 +37,7 @@ const accountIcons: Record<string, React.ElementType> = {
   investment: TrendingUp,
 }
 
-export function TeamSwitcher({
+export function AccountSwitcher({
   accounts,
 }: {
   accounts: Account[]
@@ -44,7 +45,8 @@ export function TeamSwitcher({
   const { isMobile } = useSidebar()
   const [activeAccount, setActiveAccount] = React.useState<Account>(accounts[0])
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const { user } = useUser()
+  const { user, isLoading } = useUser()
+
   if (!activeAccount) {
     return null
   }
@@ -56,21 +58,18 @@ export function TeamSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
+          <DropdownMenuTrigger asChild className="group/dropdown-menu">
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                 <ActiveIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeAccount.name}</span>
                 <span className="truncate text-xs capitalize">
-                  {activeAccount.type} | {activeAccount.balance.toFixed(2)} {user?.currency} 
+                  {activeAccount.type} | {user?.currency} 
                 </span>
               </div>
-              <ChevronRight className="ml-auto" />
+              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/dropdown-menu:rotate-90" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -86,7 +85,7 @@ export function TeamSwitcher({
               const Icon = accountIcons[account.type] || Wallet
               return (
                 <DropdownMenuItem
-                  key={account.id}
+                  key={account?.id ?? index}
                   onClick={() => setActiveAccount(account)}
                   className="gap-2 p-2"
                 >
@@ -96,7 +95,7 @@ export function TeamSwitcher({
                   <div className="flex flex-col flex-1">
                     <span>{account.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {account.balance.toFixed(2)} {user?.currency}
+                      {account.balance?.toFixed(2) ?? 0} {user?.currency}
                     </span>
                   </div>
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

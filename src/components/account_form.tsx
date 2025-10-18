@@ -38,11 +38,12 @@ export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, 
         }
     })
 
-    const { user, addAccount } = useUser();
+    const { user, addAccount, fetchUserAccounts } = useUser();
     const accountType = form.watch("type");
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user) return;
+
         try {
             const createResoponse = await fetch('/api/accounts', {
                 method: 'POST',
@@ -57,6 +58,7 @@ export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, 
 
             const account = await createResoponse.json();
             addAccount(account);
+            fetchUserAccounts(user.id);
             console.log('Created account:', account)
             toast.success("Account created successfully!");
             form.reset();
