@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { PanelLeftIcon } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
+import { useState } from "react"
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
@@ -259,7 +259,7 @@ function SidebarTrigger({
   ...props
 }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar()
-
+  const [isCollapsed, setIsCollapsed] = useState(false)
   return (
     <Button
       data-sidebar="trigger"
@@ -270,10 +270,16 @@ function SidebarTrigger({
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
+        setIsCollapsed(!isCollapsed)
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <ArrowLeft
+        className={cn(
+          "transition-transform duration-500", 
+          isCollapsed ? "rotate-180" : "rotate-0",
+        )} 
+      />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -281,7 +287,7 @@ function SidebarTrigger({
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   const { toggleSidebar } = useSidebar()
-
+  
   return (
     <button
       data-sidebar="rail"

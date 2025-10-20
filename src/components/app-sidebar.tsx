@@ -150,7 +150,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser user={dataOld.user} />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   )
 }

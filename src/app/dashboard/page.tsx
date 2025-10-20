@@ -21,7 +21,7 @@ import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TransactionsTable } from "@/components/transactions-table"
-import { columns } from "@/components/columns"
+import { columns } from "@/components/transaction-columns"
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { TransactionForm } from "@/components/transaction-form"
@@ -44,7 +44,7 @@ export default function Page() {
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 font-mono">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger className="-ml-1 text-muted-foreground" />
             <Separator
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
