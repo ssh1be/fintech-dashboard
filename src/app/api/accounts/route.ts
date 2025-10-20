@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
             throw error 
         }
         console.log('Saved account:', data);
-        return NextResponse.json({ user: data }, { status: 201 })
+        return NextResponse.json( data , { status: 201 })
     } catch (error) {
         console.error('API route error:', error);
         return NextResponse.json({ 

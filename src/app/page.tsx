@@ -1,7 +1,7 @@
 "use client"
 import { useUser } from '@/context/UserContext';
-import { UserForm } from "@/components/user_form"
-import { AccountForm } from '@/components/account_form';
+import { UserForm } from "@/components/user-form"
+import { AccountForm } from '@/components/account-form';
 import { Button } from '@/components/ui/button';
 import { LogOut } from "lucide-react"
 import { useEffect } from 'react';
@@ -12,7 +12,6 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() =>{
-    console.log('accounts (home):', accounts);
     if (accounts.length > 0) {
       router.push('/dashboard');
     }

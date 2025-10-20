@@ -9,7 +9,6 @@ import { toast } from "sonner"
 import { useUser } from "@/context/UserContext"
 import { Spinner } from "./ui/spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { Value } from "@radix-ui/react-select"
 import { cn } from "@/lib/utils"
 
 const formSchema = z.object({

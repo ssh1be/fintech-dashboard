@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight, Plus, type LucideIcon } from "lucide-react"
 
 import {
   Collapsible,
@@ -17,7 +17,11 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 
+import { useState } from "react"
+import { TransactionForm } from "./transaction-form"
+import { useUser } from "@/context/UserContext"
 export function NavMain({
   items,
 }: {
@@ -33,9 +37,11 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const { selectedAccount } = useUser()
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Actions</SidebarGroupLabel>
+      <SidebarGroupLabel>Account actions</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
@@ -56,12 +62,26 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          {subItem.icon && <subItem.icon />}
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                          <DialogTrigger asChild>
+                            <SidebarMenuSubButton asChild className="flex flex-row" onSelect={(e) => e.preventDefault()}>
+                              <a href={subItem.url}>
+                                {subItem.icon && <subItem.icon />}
+                                <span>{subItem.title}</span>
+                              </a>
+                            </SidebarMenuSubButton>
+                          </DialogTrigger>
+                          {subItem?.title === "Add new" && 
+                            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto font-mono p-10 bg-stone-50">
+                              <DialogHeader>
+                                <DialogTitle>Add transaction to "<i>{selectedAccount?.name}</i>"</DialogTitle>
+                              </DialogHeader>
+                              <div className="mt-4">
+                                <TransactionForm onSuccess={() => setIsDialogOpen(false)} className="w-full border-none p-1" />
+                              </div>
+                            </DialogContent>
+                          }
+                      </Dialog>
                     </SidebarMenuSubItem>
                   ))}
                 </SidebarMenuSub>

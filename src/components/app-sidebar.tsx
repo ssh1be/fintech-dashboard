@@ -39,12 +39,12 @@ import {
 
 import { useUser } from '@/context/UserContext';
 import { Spinner } from './ui/spinner';
+import { TransactionForm } from "./transaction-form";
 
 const dataOld = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "null",
   },
   navMain: [
     {

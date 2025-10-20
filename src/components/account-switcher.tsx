@@ -26,9 +26,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AccountForm } from "@/components/account_form"
+import { AccountForm } from "@/components/account-form"
 import { useUser } from "@/context/UserContext"
 import { Spinner } from "./ui/spinner"
+import { useEffect } from "react"
 // Map account types to icons
 const accountIcons: Record<string, React.ElementType> = {
   checking: Wallet,
@@ -45,11 +46,15 @@ export function AccountSwitcher({
   const { isMobile } = useSidebar()
   const [activeAccount, setActiveAccount] = React.useState<Account>(accounts[0])
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const { user, isLoading } = useUser()
+  const { user, setSelectedAccount } = useUser()
 
   if (!activeAccount) {
     return null
   }
+
+  useEffect(() => {
+    setSelectedAccount(activeAccount)
+  }, [activeAccount])
 
   const ActiveIcon = accountIcons[activeAccount.type] || Wallet
   
@@ -105,11 +110,11 @@ export function AccountSwitcher({
             <DropdownMenuSeparator />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <DropdownMenuItem className="gap-2 p-2" onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem className="gap-2 p-2 text-muted-foreground hover:text-primary" onSelect={(e) => e.preventDefault()}>
                   <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                    <Plus className="size-4" />
+                    <Plus className="size-4 hover:text-primary" />
                   </div>
-                  <div className="text-muted-foreground font-medium">Add account</div> 
+                  <div className="font-medium">Add account</div> 
                 </DropdownMenuItem>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto font-mono p-10 bg-stone-50">

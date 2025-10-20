@@ -1,24 +1,34 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
-import { User, Account } from '@/lib/types';
+import { User, Account, Transaction } from '@/lib/types';
 import { Spinner } from '@/components/ui/spinner';
 
 const UserContext = createContext<{
   user: User | null;
   accounts: Account[];
+  transactions: Transaction[];
   setUser: (user: User | null) => void;
   setAccounts: (accounts: Account[]) => void;
   addAccount: (account: Account) => void;
   fetchUserAccounts: (userId: string) => void;
+  selectedAccount: Account | null;
+  setSelectedAccount: (account: Account | null) => void;
+  addTransaction: (transaction: Transaction) => void;
+  fetchUserTransactions: (userId: string) => void;
   logout: () => void;
   isLoading: boolean;
 }>({ 
   user: null, 
   accounts: [],
+  transactions: [],
   setUser: () => {},
   setAccounts: () => {},
   addAccount: () => {},
   fetchUserAccounts: () => {},
+  selectedAccount: null,
+  setSelectedAccount: () => {},
+  addTransaction: () => {},
+  fetchUserTransactions: () => {},
   logout: () => {},
   isLoading: true,
 });
@@ -27,7 +37,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   // Load user and accounts from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -37,10 +48,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(parsedUser);
       // Fetch fresh data from API
       fetchUserAccounts(parsedUser.id);
+      fetchUserTransactions(parsedUser.id);
     }
     
     setIsLoading(false);
   }, []); // Only run once on mount
+
+  // Save user to localStorage whenever it changes
+  const updateUser = (newUser: User | null) => {
+    setUser(newUser);
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
+      // Fetch accounts when user logs in
+      fetchUserAccounts(newUser.id);
+    } else {
+      localStorage.removeItem('user');
+    }
+  };
 
   // Fetch accounts from API
   async function fetchUserAccounts(userId: string) {
@@ -71,29 +95,41 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('accounts', JSON.stringify(updatedAccounts));
   };
 
-  // Replace all accounts
-  const updateAccounts = (newAccounts: Account[]) => {
-    setAccounts(newAccounts);
-    localStorage.setItem('accounts', JSON.stringify(newAccounts));
-  };
 
-  // Save user to localStorage whenever it changes
-  const updateUser = (newUser: User | null) => {
-    setUser(newUser);
-    if (newUser) {
-      localStorage.setItem('user', JSON.stringify(newUser));
-      // Fetch accounts when user logs in
-      fetchUserAccounts(newUser.id);
-    } else {
-      localStorage.removeItem('user');
+  // Fetch transactions from API
+  async function fetchUserTransactions(userId: string) {
+    try {
+      const response = await fetch(`/api/transactions?userId=${userId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to fetch transactions');
+
+      const fetchedTransactions = await response.json();
+      console.log('Fetched transactions:', fetchedTransactions);
+
+      // Update both state and localStorage
+      setTransactions(fetchedTransactions);
+      localStorage.setItem('transactions', JSON.stringify(fetchedTransactions));
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
     }
+  }
+  // Add a single transaction
+  const addTransaction = (newTransaction: Transaction) => {
+    const updatedTransactions = [...transactions, newTransaction];
+    setTransactions(updatedTransactions);
+    localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
   };
 
   const logout = () => {
     setUser(null);
     setAccounts([]);
+    setTransactions([]);
+    setSelectedAccount(null);
     localStorage.removeItem('user');
     localStorage.removeItem('accounts');
+    localStorage.removeItem('transactions');
   };
 
   if (isLoading) {
@@ -108,11 +144,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     <UserContext.Provider value={{ 
       user, 
       accounts, 
+      transactions,
       setUser: updateUser, 
+      setAccounts, 
       addAccount, 
-      setAccounts: updateAccounts, 
-      logout,
       fetchUserAccounts,
+      selectedAccount,
+      setSelectedAccount,
+      addTransaction, 
+      fetchUserTransactions,
+      logout,
       isLoading,
     }}>
       {children}
