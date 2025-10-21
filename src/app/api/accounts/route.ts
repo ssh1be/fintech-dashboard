@@ -71,3 +71,27 @@ export async function GET(request: NextRequest) {
         }, { status: 500 })
     }
 }
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const accountId = searchParams.get('accountId');
+        if (!accountId) {
+            return NextResponse.json({ error: 'accountId required' }, { status: 400 });
+        }
+        console.log('Recieved accountId', accountId);
+        const { data, error } = await supabase
+            .from("accounts")
+            .delete()
+            .eq("id", accountId)
+        if (error) {
+            console.error('Supabase error:', error);
+            throw error
+        }
+        console.log('Deleted account:', data);
+        return NextResponse.json(data, {status: 200})
+    } catch (error) {
+        console.log('API route error', error);
+        return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
+    }
+}

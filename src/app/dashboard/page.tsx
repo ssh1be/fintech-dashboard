@@ -26,7 +26,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { TransactionForm } from "@/components/transaction-form"
 export default function Page() {
-  const { logout, user, transactions, selectedAccount, fetchUserTransactions } = useUser();
+  const { logout, user, accounts, transactions, selectedAccount, fetchUserTransactions } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
@@ -37,7 +37,12 @@ export default function Page() {
       fetchUserTransactions(user.id);
     }
   }, [user])
-
+  
+  useEffect(() => {
+    if (accounts?.length === 0) {
+      router.push('/');
+    }
+  }, [accounts])
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -86,7 +91,7 @@ export default function Page() {
             <div className="bg-muted/75 aspect-video rounded-xl animate-pulse" />
             <div className="bg-muted/50 aspect-video rounded-xl animate-pulse" />
           </div>
-          {transactions.length > 0 ? (
+          {transactions.length >= 0 ? (
             <div className="bg-transparent min-h-[100vh] flex-1 rounded-xl md:min-h-min text-muted-foreground fade-in">
               <TransactionsTable columns={columns} data={transactions} />
             </div>

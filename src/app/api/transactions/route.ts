@@ -68,7 +68,6 @@ export async function GET(request: NextRequest) {
             }
             allTransactions.push(...transactions);
         }
-        console.log('All transactions:', allTransactions);
         return NextResponse.json(allTransactions, {status: 200})
     } catch (error) {
         console.error('API route error:', error);
@@ -76,5 +75,29 @@ export async function GET(request: NextRequest) {
             error: "Failed to get transactions",
             details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 })
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const transactionId = searchParams.get('transactionId');
+        if (!transactionId) {
+            return NextResponse.json({ error: 'transactionId required' }, { status: 400 });
+        }
+        console.log('Recieved transactionId', transactionId);
+        const { data, error } = await supabase
+            .from("transactions")
+            .delete()
+            .eq("id", transactionId)
+        if (error) {
+            console.error('Supabase error:', error);
+            throw error
+        }
+        console.log('Deleted transaction:', data);
+        return NextResponse.json(data, {status: 200})
+    } catch (error) {
+        console.log('API route error', error);
+        return NextResponse.json({ error: 'Failed to delete transaction' }, { status: 500 });
     }
 }

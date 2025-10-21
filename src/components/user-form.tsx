@@ -15,11 +15,11 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from ".
 const formSchema = z.object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
     pin: z.string().min(4, { message: "Password must be at least 4 characters" }),
-    currency: z.enum(["USD", "EUR", "GBP", "JPY", "CAD", "AUD"]),
+    currency: z.enum(["USD", "EUR", "GBP", "JPY"]),
 })
  
 export function UserForm() {
-  const { setUser, user } = useUser();
+  const { setUser } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,7 +45,6 @@ export function UserForm() {
         toast.success(`Hi ${existingUser.name}!`);
         return;
       }
-      
       // If login fails, create new user
       const createResponse = await fetch('/api/users', {
         method: 'POST',
@@ -54,11 +53,21 @@ export function UserForm() {
       });
       
       if (!createResponse.ok) throw new Error('Failed to create user');
+
+      // Login the new user
+      const loginCreateResponse = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
       
-      const newUser = await createResponse.json();
-      setUser(newUser);
-      toast.success("User created successfully!");
-      form.reset();
+      if (loginCreateResponse.ok) {
+        const newUser = await loginCreateResponse.json();
+        setUser(newUser);
+        toast.success("User created successfully!");
+        form.reset();
+        return;
+      }
     } catch (error) {
       toast.error("Something went wrong");
     }

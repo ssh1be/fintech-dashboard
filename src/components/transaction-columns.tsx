@@ -109,29 +109,34 @@ export const columns: ColumnDef<Transaction>[] = [
   // },
   {
     id: "actions",
-    header: "Actions",
+    header: "",
     cell: ({ row }) => {
       if (row.original === null) {
         return <div className="text-left">Unknown Transaction</div>
       }
+      const { deleteTransaction, user } = useUser();
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-stone-50 font-mono text-muted-foreground">
-            <DropdownMenuItem>
-              <Trash2 className="h-4 w-4" /> Delete 
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Pencil className="h-4 w-4" /> Edit
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-stone-50 font-mono text-muted-foreground">
+              <DropdownMenuItem onClick={() => deleteTransaction(row.original.id, user.id)}>
+                <Trash2 className="h-4 w-4" /> Delete 
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="disabled">
+                <Pencil className="h-4 w-4" /> Edit
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        </>
       )
     },
   },

@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { User, Account, Transaction } from '@/lib/types';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from 'sonner';
 
 const UserContext = createContext<{
   user: User | null;
@@ -11,12 +12,15 @@ const UserContext = createContext<{
   setAccounts: (accounts: Account[]) => void;
   addAccount: (account: Account) => void;
   fetchUserAccounts: (userId: string) => void;
+  deleteAccount: (accountId: string, userId: string) => void;
   selectedAccount: Account | null;
   setSelectedAccount: (account: Account | null) => void;
   addTransaction: (transaction: Transaction) => void;
   fetchUserTransactions: (userId: string) => void;
+  deleteTransaction: (transactionId: string, userId: string) => void;
   logout: () => void;
   isLoading: boolean;
+  deleteUser: (userId: string) => void;
 }>({ 
   user: null, 
   accounts: [],
@@ -25,12 +29,15 @@ const UserContext = createContext<{
   setAccounts: () => {},
   addAccount: () => {},
   fetchUserAccounts: () => {},
+  deleteAccount: () => {},
   selectedAccount: null,
   setSelectedAccount: () => {},
   addTransaction: () => {},
   fetchUserTransactions: () => {},
+  deleteTransaction: () => {},
   logout: () => {},
   isLoading: true,
+  deleteUser: () => {},
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,7 +49,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   // Load user and accounts from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -87,7 +93,26 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Delete a single account
+  async function deleteAccount(accountId: string, userId: string) {
+    try {
+      const response = await fetch(`/api/accounts?accountId=${accountId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to delete account');
 
+      const deletedAccount = await response.json();
+      console.log('Deleted account:', deletedAccount);
+      toast.success('Account deleted successfully!');
+      fetchUserAccounts(userId);
+      fetchUserTransactions(userId);
+      setSelectedAccount(accounts.length > 0 ? accounts[0] : null);
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      toast.error('Failed to delete account');
+    }
+  }
   // Add a single account
   const addAccount = (newAccount: Account) => {
     const updatedAccounts = [...accounts, newAccount];
@@ -122,6 +147,25 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
   };
 
+  // Delete a single transaction
+  async function deleteTransaction(transactionId: string, userId: string) {
+    try {
+      const response = await fetch(`/api/transactions?transactionId=${transactionId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    if (!response.ok) throw new Error('Failed to delete transaction');
+
+    const deletedTransaction = await response.json();
+    console.log('Deleted transaction:', deletedTransaction);
+    toast.success('Transaction deleted successfully!');
+    fetchUserTransactions(userId);
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+      toast.error('Failed to delete transaction');
+    }
+  }
+
   const logout = () => {
     setUser(null);
     setAccounts([]);
@@ -131,6 +175,22 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem('accounts');
     localStorage.removeItem('transactions');
   };
+  
+  async function deleteUser(userId: string) {
+    try {
+      const response = await fetch(`/api/users?userId=${userId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to delete user');
+
+      toast.success('User deleted successfully!');
+      logout();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      toast.error('Failed to delete user');
+    }
+  }
 
   if (isLoading) {
     return (
@@ -149,11 +209,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setAccounts, 
       addAccount, 
       fetchUserAccounts,
+      deleteAccount,
       selectedAccount,
       setSelectedAccount,
       addTransaction, 
       fetchUserTransactions,
+      deleteTransaction,
       logout,
+      deleteUser,
       isLoading,
     }}>
       {children}

@@ -38,6 +38,8 @@ const accountIcons: Record<string, React.ElementType> = {
   investment: TrendingUp,
 }
 
+
+
 export function AccountSwitcher({
   accounts,
 }: {
@@ -46,19 +48,36 @@ export function AccountSwitcher({
   const { isMobile } = useSidebar()
   const [activeAccount, setActiveAccount] = React.useState<Account>(accounts[0])
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const { user, setSelectedAccount } = useUser()
-
-  if (!activeAccount) {
-    return null
-  }
+  const { user, setSelectedAccount, transactions } = useUser()
 
   useEffect(() => {
     setSelectedAccount(activeAccount)
   }, [activeAccount])
 
-  const ActiveIcon = accountIcons[activeAccount.type] || Wallet
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setActiveAccount(accounts[0])
+    }
+  }, [accounts])
+
+  const ActiveIcon = React.useMemo(() => {
+    return accountIcons[activeAccount?.type || 'checking'] || Wallet
+  }, [activeAccount])
   
-  
+
+  function AccountBalance({ account }: { account: Account }) {
+    const accountTransactions = transactions.filter((transaction) => transaction?.accountId === account?.id)
+    const totalBalance = account?.balance + (accountTransactions?.reduce((
+      acc, 
+      transaction
+    ) => transaction?.type === 'deposit' || transaction?.type === 'buy' || transaction?.type === 'payment' ? acc + transaction?.amount : acc - transaction?.amount, 0) ?? 0)
+    return (
+      <span className="text-xs text-muted-foreground">  
+        {totalBalance?.toFixed(2) ?? 0} {user?.currency}
+      </span>
+    )
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -69,9 +88,9 @@ export function AccountSwitcher({
                 <ActiveIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeAccount.name}</span>
+                <span className="truncate font-medium">{activeAccount?.name}</span>
                 <span className="truncate text-xs capitalize">
-                  {activeAccount.type} | {user?.currency} 
+                  {activeAccount?.type} | {user?.currency} 
                 </span>
               </div>
               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/dropdown-menu:rotate-90" />
@@ -87,7 +106,7 @@ export function AccountSwitcher({
               Accounts
             </DropdownMenuLabel>
             {accounts?.map((account, index) => {
-              const Icon = accountIcons[account.type] || Wallet
+              const Icon = accountIcons[account?.type || 'checking'] || Wallet
               return (
                 <DropdownMenuItem
                   key={account?.id ?? index}
@@ -98,9 +117,9 @@ export function AccountSwitcher({
                     <Icon className="size-3.5 shrink-0" />
                   </div>
                   <div className="flex flex-col flex-1">
-                    <span>{account.name}</span>
+                    <span>{account?.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {account.balance?.toFixed(2) ?? 0} {user?.currency}
+                      <AccountBalance account={account} />
                     </span>
                   </div>
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

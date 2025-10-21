@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "./ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useState } from "react"
 
 interface TransactionsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -31,20 +32,28 @@ export function TransactionsTable<TData, TValue>({
   columns,
   data,
 }: TransactionsTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
+  const validData = React.useMemo(() => {
+    return data.filter(row => row !== null && row !== undefined)
+  }, [data])
   const table = useReactTable({
-    data,
+    data: validData,
     columns,
+    state: {
+      sorting,
+    },
+    initialState: {
+      pagination: {
+        pageIndex: 0,
+        pageSize: 8,
+      },
+    },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting,
-    },
   })
 
-  
   return (
     <div>
       <div className="overflow-hidden rounded-md border">

@@ -1,12 +1,10 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
+  Pencil,
+  Settings,
+  Trash,
 } from "lucide-react"
 
 import {
@@ -26,19 +24,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSubButton,
   useSidebar,
 } from "@/components/ui/sidebar"
-
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-  }
-}) {
+import { Button } from "./ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
+import { useState } from "react"
+import { useUser } from "@/context/UserContext"
+export function NavUser() {
   const { isMobile } = useSidebar()
-
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { deleteUser, user } = useUser()
   return (
     <SidebarMenu className="font-mono">
       <SidebarMenuItem>
@@ -49,11 +45,11 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">{user.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{user?.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate text-xs">{user?.currency}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -67,41 +63,48 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{user?.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user?.name}</span>
+                  <span className="truncate text-xs">{user?.currency}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem className="disabled">
+                <Settings />
+                Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+                <Pencil />
+                Edit user
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                    <a href="#">
+                      <Trash/>
+                      <span>Delete</span>
+                    </a>
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto font-mono p-10 bg-stone-50">
+                  <DialogHeader>
+                    <DialogTitle>Are you sure you want to delete this user?</DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription>WARNING: This action will delete all accounts and transactions associated with this user.</DialogDescription>
+                  <div className="mt-2">
+                    <Button variant="destructive" onClick={() => {deleteUser(user?.id || ''); setIsDeleteDialogOpen(false);}}>Delete</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

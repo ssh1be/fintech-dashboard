@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         console.log('Received body:', body);
 
         const name: string = body.name
-        //save user to database
+        
         const { data, error } = await supabase
             .from("users")
             .select("name")
@@ -59,5 +59,30 @@ export async function GET(request: NextRequest) {
             error: "Failed to get user",
             details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 })
+    }
+}
+
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('userId');
+        if (!userId) {
+            return NextResponse.json({ error: 'userId required' }, { status: 400 });
+        }
+        console.log('Recieved userId', userId);
+        const { data, error } = await supabase
+            .from("users")
+            .delete()
+            .eq("id", userId)
+        if (error) {
+            console.error('Supabase error:', error);
+            throw error
+        }
+        console.log('Deleted user:', data);
+        return NextResponse.json(data, { status: 200 });
+    } catch (error) {
+        console.error('API route error:', error);
+        return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
     }
 }

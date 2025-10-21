@@ -24,7 +24,7 @@ export default function Home() {
           <>
             {accounts.length === 0 && ( /* User account exists? */
             <>
-              <h1 className="text-5xl font-normal font-mono mt-20 fade-in">Welcome, {user.name}</h1>
+              <h1 className="text-5xl font-normal font-mono mt-20 fade-in">Welcome, {user?.name || 'User'}</h1>
               <h2 className="text-2xl font-normal font-mono text-muted-foreground mt-5 fade-in-slow">let's start by adding an account.</h2>
               <div className="flex flex-row justify-center w-1/2 gap-4 mt-20 mb-20 fade-in">
                 <AccountForm />

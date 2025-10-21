@@ -46,56 +46,6 @@ const dataOld = {
     name: "shadcn",
     email: "m@example.com",
   },
-  navMain: [
-    {
-      title: "Transactions",
-      url: "#",
-      icon: DollarSign,
-      isActive: true,
-      items: [
-        {
-          title: "Add new",
-          url: "#",
-          icon: Plus,
-        },
-        {
-          title: "Import",
-          url: "#",
-          icon: Upload,
-        },
-        {
-          title: "History",
-          url: "#",
-          icon: History,
-        },
-      ],
-    },
-    {
-      title: "Account",
-      url: "#",
-      icon: CreditCard,
-      items: [
-        {
-          title: "Edit",
-          url: "#",
-          icon: Pencil,
-        },
-        {
-          title: "Delete",
-          url: "#",
-          icon: Trash,
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-
-      ],
-    },
-  ],
   projects: [
     {
       name: "Design Engineering",
@@ -144,7 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={dataOld.navMain} />
+        <NavMain />
         {/* <NavProjects projects={dataOld.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
