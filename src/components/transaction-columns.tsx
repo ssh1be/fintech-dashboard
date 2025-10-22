@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { Transaction } from "@/lib/types"
 import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
  
@@ -16,7 +16,12 @@ import {
 import { useUser } from "@/context/UserContext"
 import { Spinner } from "./ui/spinner"
 
-export const columns: ColumnDef<Transaction>[] = [
+
+export interface NormalizedTransaction extends Transaction {
+  [key: string]: any
+}
+
+export const baseColumns: ColumnDef<NormalizedTransaction>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => {
@@ -29,7 +34,7 @@ export const columns: ColumnDef<Transaction>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
-    },
+  },
     cell: ({ row }) => {
       if (row.original === null) {
         return <div className="text-left">Unknown Date</div>
@@ -76,6 +81,9 @@ export const columns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       if (row.original === null) {
         return <div className="text-left">Unknown Category</div>
+      } 
+      if (row.original.category === "") {
+        return <div className="text-left">-</div>
       }
       const category = row.original.category
       return <div className="text-left">{category}</div>
@@ -93,51 +101,76 @@ export const columns: ColumnDef<Transaction>[] = [
       if (!account) {
         return <Spinner className="size-4 animate-spin" />
       }
-      return <div className="text-left">{account?.type.charAt(0).toUpperCase() + account?.type.slice(1)}</div>
-    },
-  },
-  // {
-  //   accessorKey: "customFields",
-  //   header: "Custom Fields",
-  //   cell: ({ row }) => {
-  //     if (row.original === null) {
-  //       return <div className="text-left">Unknown Custom Fields</div>
-  //     }
-  //     const customFields = row.original.customFields
-  //     return <div className="text-left">{customFields?.toString()}</div>
-  //   },
-  // },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => {
-      if (row.original === null) {
-        return <div className="text-left">Unknown Transaction</div>
-      }
-      const { deleteTransaction, user } = useUser();
-      return (
-        <>
-        {user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-stone-50 font-mono text-muted-foreground">
-              <DropdownMenuItem onClick={() => deleteTransaction(row.original.id, user.id)}>
-                <Trash2 className="h-4 w-4" /> Delete 
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="disabled">
-                <Pencil className="h-4 w-4" /> Edit
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        </>
-      )
+      const accountName = account?.type.charAt(0).toUpperCase() + account?.type.slice(1)
+      return <div className="text-left">{accountName}</div>
     },
   },
 ]
+
+export function generateCustomFieldColumns<NormalizedTransaction>(
+  data: NormalizedTransaction[]
+): ColumnDef<NormalizedTransaction>[] {
+  if (!data.length) return [];
+
+  // Detect any keys prefixed with "custom_"
+  const allKeys = new Set<string>();
+  for (const tx of data) {
+    for (const key in tx) {
+      if (key.startsWith("custom_")) {
+        allKeys.add(key);
+      }
+    }
+  }
+  // Create column definitions for each custom field
+  return Array.from(allKeys).map((key) => {
+    const label = key.replace("custom_", "");
+    return {
+      accessorKey: key,
+      header: ({ column }) => (
+        <div className="flex items-center">
+          *{label}
+        </div>
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue(key);
+        if (value === undefined || value === null)
+          return <span className="text-muted-foreground">—</span>;
+        return <span>{String(value)}</span>;
+      },
+    } satisfies ColumnDef<NormalizedTransaction>;
+  });
+}
+
+export function actionColumn(): ColumnDef<NormalizedTransaction>[] {
+  return [
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const { user, deleteTransaction } = useUser();
+        return (
+          <>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-stone-50 font-mono text-muted-foreground">
+                <DropdownMenuItem onClick={() => deleteTransaction(row.original.id, user.id)}>
+                  <Trash2 className="h-4 w-4" /> Delete 
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="disabled">
+                  <Pencil className="h-4 w-4" /> Edit
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          </>
+        )
+      },
+    } satisfies ColumnDef<NormalizedTransaction>,
+  ];
+}

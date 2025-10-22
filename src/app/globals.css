@@ -136,18 +136,17 @@
 }
 
 ::-webkit-scrollbar {
-  width: 8px; /* Width of the vertical scrollbar */
-  height: 8px; /* Height of the horizontal scrollbar */
+  width: 6px; /* Width of the vertical scrollbar */
+  height: 6px; /* Height of the horizontal scrollbar */
 }
 
 ::-webkit-scrollbar-track {
-  background: white;
-  border-radius: 5px;
+  visibility: hidden;
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgb(199, 199, 199);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

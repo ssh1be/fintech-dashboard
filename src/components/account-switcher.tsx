@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ChevronRight, ChevronDown } from "lucide-react"
+import { ChevronsUpDown, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ChevronRight, ChevronDown, RefreshCw } from "lucide-react"
 import { Account } from "@/lib/types"
 
 import {
@@ -49,9 +49,15 @@ export function AccountSwitcher({
   const [activeAccount, setActiveAccount] = React.useState<Account>(accounts[0])
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const { user, setSelectedAccount, transactions } = useUser()
+  const [isRefreshing, setIsRefreshing] = React.useState(false)
+
 
   useEffect(() => {
     setSelectedAccount(activeAccount)
+    setIsRefreshing(true)
+    setTimeout(() => {
+      setIsRefreshing(false)
+    }, 650)
   }, [activeAccount])
 
   useEffect(() => {
@@ -93,6 +99,7 @@ export function AccountSwitcher({
                   {activeAccount?.type} | {user?.currency} 
                 </span>
               </div>
+              <RefreshCw className={`size-4 ${isRefreshing ? 'block animate-spin' : 'hidden'} `} />
               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/dropdown-menu:rotate-90" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>

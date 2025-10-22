@@ -21,10 +21,14 @@ import { useUser } from '@/context/UserContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TransactionsTable } from "@/components/transactions-table"
-import { columns } from "@/components/transaction-columns"
+import { actionColumn, baseColumns, generateCustomFieldColumns, NormalizedTransaction } from "@/components/transaction-columns"
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { TransactionForm } from "@/components/transaction-form"
+import { normalizeTransactions } from "@/lib/transaction-utils"
+import { ColumnDef } from "@tanstack/react-table"
+
+
 export default function Page() {
   const { logout, user, accounts, transactions, selectedAccount, fetchUserTransactions } = useUser();
   const router = useRouter();
@@ -43,6 +47,17 @@ export default function Page() {
       router.push('/');
     }
   }, [accounts])
+
+  const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions(transactions);
+  const customColumns = generateCustomFieldColumns(normalizedTransactions);
+
+  // Combine base, custom field, and action columns
+  const columns: ColumnDef<NormalizedTransaction>[] = [
+    ...baseColumns,
+    ...customColumns,
+    ...actionColumn(),
+  ];
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -93,7 +108,7 @@ export default function Page() {
           </div>
           {transactions.length >= 0 ? (
             <div className="bg-transparent min-h-[100vh] flex-1 rounded-xl md:min-h-min text-muted-foreground fade-in">
-              <TransactionsTable columns={columns} data={transactions} />
+              <TransactionsTable columns={columns} data={normalizedTransactions} />
             </div>
           ) : (
             <div className="bg-muted/100 min-h-[100vh] flex-1 rounded-xl md:min-h-min animate-pulse flex justify-center items-center">

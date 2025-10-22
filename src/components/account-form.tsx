@@ -99,7 +99,7 @@ export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, 
                                                     <SelectItem value="checking">Checking</SelectItem>
                                                     <SelectItem value="savings">Savings</SelectItem>
                                                     <SelectItem value="credit card">Credit Card</SelectItem>
-                                                    <SelectItem value="investment">Investment</SelectItem>
+                                                    <SelectItem value="investment" className="disabled pointer-events-none">Investment</SelectItem>
                                                 </SelectContent>
                                             </SelectTrigger>
                                         </FormControl>

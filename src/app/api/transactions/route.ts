@@ -94,7 +94,6 @@ export async function DELETE(request: NextRequest) {
             console.error('Supabase error:', error);
             throw error
         }
-        console.log('Deleted transaction:', data);
         return NextResponse.json(data, {status: 200})
     } catch (error) {
         console.log('API route error', error);

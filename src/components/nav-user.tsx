@@ -5,6 +5,7 @@ import {
   Pencil,
   Settings,
   Trash,
+  User,
 } from "lucide-react"
 
 import {
@@ -80,8 +81,8 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Pencil />
+              <DropdownMenuItem className="disabled">
+                <User />
                 Edit user
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -91,7 +92,7 @@ export function NavUser() {
                   <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
                     <a href="#">
                       <Trash/>
-                      <span>Delete</span>
+                      <span>Delete user</span>
                     </a>
                   </DropdownMenuItem>
                 </DialogTrigger>

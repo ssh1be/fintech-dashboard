@@ -3,9 +3,12 @@ import * as React from "react"
 
 import {
   ColumnDef,
+  ColumnFiltersState,
   SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -20,7 +23,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "./ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "./ui/input"
+import { ChevronLeft, ChevronRight, EyeClosedIcon, EyeIcon } from "lucide-react"
 import { useState } from "react"
 
 interface TransactionsTableProps<TData, TValue> {
@@ -33,6 +43,9 @@ export function TransactionsTable<TData, TValue>({
   data,
 }: TransactionsTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({})
   const validData = React.useMemo(() => {
     return data.filter(row => row !== null && row !== undefined)
   }, [data])
@@ -41,6 +54,8 @@ export function TransactionsTable<TData, TValue>({
     columns,
     state: {
       sorting,
+      columnFilters,
+      columnVisibility,
     },
     initialState: {
       pagination: {
@@ -52,10 +67,52 @@ export function TransactionsTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    
   })
-
+  
   return (
     <div>
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter transactions..."
+          value={table.getState().globalFilter ?? ""}
+          onChange={e => table.setGlobalFilter(String(e.target.value))}
+          className="max-w-sm"
+        />
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="ml-auto font-mono">
+            Visible columns<EyeIcon className="h-4 w-4" />
+          </Button>
+          
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="font-mono text-muted-foreground">
+          {table
+            .getAllColumns()
+            .filter(
+              (column) => column.getCanHide()
+            )
+            .map((column) => {
+              return (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) =>
+                    column.toggleVisibility(!!value)
+                  }
+                >
+                  {column.id.includes("custom_") ? column.id.replace("custom_", "*") : column.id} 
+                </DropdownMenuCheckboxItem>
+              )
+            })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
