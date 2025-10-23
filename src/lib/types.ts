@@ -48,7 +48,7 @@ export interface Transaction {
   amount: number;
   type: "deposit" | "withdrawal" | "purchase" | "payment" | "buy" | "sell" | "dividend";
   date: string;
-  category: string;
+  category?: string;
   customFields?: Record<string, string | number | boolean>;
   createdAt?: string;
 }

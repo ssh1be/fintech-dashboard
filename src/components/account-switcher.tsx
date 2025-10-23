@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ChevronsUpDown, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ChevronRight, ChevronDown, RefreshCw } from "lucide-react"
-import { Account } from "@/lib/types"
+import { Account, Transaction, User } from "@/lib/types"
 
 import {
   DropdownMenu,
@@ -27,9 +27,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { AccountForm } from "@/components/account-form"
-import { useUser } from "@/context/UserContext"
-import { Spinner } from "./ui/spinner"
 import { useEffect } from "react"
+import { useUser } from "@/context/UserContext"
+import { AccountBalance } from "@/components/summary"
 // Map account types to icons
 const accountIcons: Record<string, React.ElementType> = {
   checking: Wallet,
@@ -38,19 +38,20 @@ const accountIcons: Record<string, React.ElementType> = {
   investment: TrendingUp,
 }
 
-
-
 export function AccountSwitcher({
   accounts,
+  transactions,
+  user,
 }: {
   accounts: Account[]
+  transactions: Transaction[]
+  user: User | null
 }) {
   const { isMobile } = useSidebar()
   const [activeAccount, setActiveAccount] = React.useState<Account>(accounts[0])
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const { user, setSelectedAccount, transactions } = useUser()
   const [isRefreshing, setIsRefreshing] = React.useState(false)
-
+  const { setSelectedAccount } = useUser()
 
   useEffect(() => {
     setSelectedAccount(activeAccount)
@@ -69,21 +70,6 @@ export function AccountSwitcher({
   const ActiveIcon = React.useMemo(() => {
     return accountIcons[activeAccount?.type || 'checking'] || Wallet
   }, [activeAccount])
-  
-
-  function AccountBalance({ account }: { account: Account }) {
-    const accountTransactions = transactions.filter((transaction) => transaction?.accountId === account?.id)
-    const totalBalance = account?.balance + (accountTransactions?.reduce((
-      acc, 
-      transaction
-    ) => transaction?.type === 'deposit' || transaction?.type === 'buy' || transaction?.type === 'payment' ? acc + transaction?.amount : acc - transaction?.amount, 0) ?? 0)
-    return (
-      <span className="text-xs text-muted-foreground">  
-        {totalBalance?.toFixed(2) ?? 0} {user?.currency}
-      </span>
-    )
-  }
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -126,7 +112,7 @@ export function AccountSwitcher({
                   <div className="flex flex-col flex-1">
                     <span>{account?.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      <AccountBalance account={account} />
+                      {AccountBalance({ account, transactions })} {user?.currency}
                     </span>
                   </div>
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

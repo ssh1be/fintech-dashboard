@@ -2,12 +2,10 @@
 
 import {
   ChevronsUpDown,
-  Pencil,
   Settings,
   Trash,
   User,
 } from "lucide-react"
-
 import {
   Avatar,
   AvatarFallback,
@@ -31,11 +29,14 @@ import {
 import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { useState } from "react"
+import { User as UserType } from "@/lib/types"
 import { useUser } from "@/context/UserContext"
-export function NavUser() {
+
+export function NavUser(props: { user: UserType | null }) {
   const { isMobile } = useSidebar()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const { deleteUser, user } = useUser()
+  const { user } = props
+  const { deleteUser } = useUser()
   return (
     <SidebarMenu className="font-mono">
       <SidebarMenuItem>

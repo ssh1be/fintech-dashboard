@@ -40,12 +40,9 @@ import {
 import { useUser } from '@/context/UserContext';
 import { Spinner } from './ui/spinner';
 import { TransactionForm } from "./transaction-form";
+import { Account, Transaction, User } from "@/lib/types"
 
 const dataOld = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-  },
   projects: [
     {
       name: "Design Engineering",
@@ -66,17 +63,18 @@ const dataOld = {
 }
 
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, accounts } = useUser();
-  
-  dataOld.user.name = user?.name || '';
-  dataOld.user.email = user?.currency || '';
-
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar> & { 
+  user: User | null, 
+  accounts: Account[], 
+  transactions: Transaction[], 
+  selectedaccount: Account | null,
+}) {
+  const { user, accounts, transactions, selectedaccount } = props
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         {accounts.length > 0 ? (
-          <AccountSwitcher accounts={accounts} />
+          <AccountSwitcher accounts={accounts} transactions={transactions} user={user} />
         ) : (
           <SidebarMenuButton
               size="lg"
@@ -94,11 +92,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain />
+        <NavMain selectedaccount={selectedaccount} user={user} />
         {/* <NavProjects projects={dataOld.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={dataOld.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

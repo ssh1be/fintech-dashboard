@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "./ui/input"
-import { ChevronLeft, ChevronRight, EyeClosedIcon, EyeIcon } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, EyeClosedIcon, EyeIcon } from "lucide-react"
 import { useState } from "react"
 
 interface TransactionsTableProps<TData, TValue> {
@@ -85,10 +85,9 @@ export function TransactionsTable<TData, TValue>({
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="ml-auto font-mono">
-            Visible columns<EyeIcon className="h-4 w-4" />
+          <Button variant="outline" className="ml-auto font-mono shadow-none">
+            Visible columns<ChevronDown className="h-4 w-4" />
           </Button>
-          
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="font-mono text-muted-foreground">
           {table

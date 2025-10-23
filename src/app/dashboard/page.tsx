@@ -27,30 +27,22 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 import { TransactionForm } from "@/components/transaction-form"
 import { normalizeTransactions } from "@/lib/transaction-utils"
 import { ColumnDef } from "@tanstack/react-table"
-
+import { Summary } from "@/components/summary"
 
 export default function Page() {
-  const { logout, user, accounts, transactions, selectedAccount, fetchUserTransactions } = useUser();
+  const { logout, user, transactions, selectedAccount, accounts } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   useEffect(() =>{
     if (!user) {
       router.push('/');
-    } else {
-      fetchUserTransactions(user.id);
     }
   }, [user])
   
-  useEffect(() => {
-    if (accounts?.length === 0) {
-      router.push('/');
-    }
-  }, [accounts])
-
-  const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions(transactions);
+  const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions(transactions, accounts);
   const customColumns = generateCustomFieldColumns(normalizedTransactions);
-
+  console.log('normalizedTransactions', normalizedTransactions);
   // Combine base, custom field, and action columns
   const columns: ColumnDef<NormalizedTransaction>[] = [
     ...baseColumns,
@@ -60,7 +52,12 @@ export default function Page() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar 
+        user={user} 
+        accounts={accounts} 
+        selectedaccount={selectedAccount} 
+        transactions={transactions} 
+      />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 font-mono">
           <div className="flex items-center gap-2 px-4">
@@ -102,7 +99,9 @@ export default function Page() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/100 aspect-video rounded-xl animate-pulse" />
+            <div className="bg-muted/100 aspect-video rounded-xl">
+              <Summary transactions={normalizedTransactions} accounts={accounts} user={user} />
+            </div>
             <div className="bg-muted/75 aspect-video rounded-xl animate-pulse" />
             <div className="bg-muted/50 aspect-video rounded-xl animate-pulse" />
           </div>

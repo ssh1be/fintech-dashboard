@@ -1,5 +1,5 @@
 import { NormalizedTransaction } from "@/components/transaction-columns";
-import { Transaction } from "./types";
+import { Account, Transaction } from "./types";
 
 
 /**
@@ -7,7 +7,7 @@ import { Transaction } from "./types";
  * @param transactions - Array of transactions.
  * @returns Array of normalized transactions.
  **/
-export function normalizeTransactions(transactions: (Transaction | null | undefined)[]): NormalizedTransaction[] {
+export function normalizeTransactions(transactions: (Transaction | null | undefined)[], accounts: Account[]): NormalizedTransaction[] {
   if (!transactions?.length) return [];
 
   // Collect all unique custom field names safely
@@ -36,7 +36,19 @@ export function normalizeTransactions(transactions: (Transaction | null | undefi
           fieldMap[`custom_${name}`],
         ])
       );
-
-      return { ...rest, ...normalizedFields };
+      const normalizedTransaction = { ...rest, ...normalizedFields };
+      return addAccountType(normalizedTransaction, accounts);
     });
+}
+
+/**
+ * Add account type to a transaction.
+ * @param transaction - Transaction to convert.
+ * @param accounts - Array of accounts.
+ * @returns Transaction with account type.
+ **/
+function addAccountType(transaction: NormalizedTransaction, accounts: Account[]): NormalizedTransaction {
+  const {accountId} = transaction
+  const account = accounts.find((account) => account.id === accountId)
+  return { ...transaction, accountType: account?.type ?? '' }
 }

@@ -1,9 +1,8 @@
 "use client"
 
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import { ColumnDef } from "@tanstack/react-table"
 import { Transaction } from "@/lib/types"
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
- 
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react" 
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -17,8 +16,9 @@ import { useUser } from "@/context/UserContext"
 import { Spinner } from "./ui/spinner"
 
 
+
 export interface NormalizedTransaction extends Transaction {
-  [key: string]: any
+  [key: string]: any // used to render custom field columns
 }
 
 export const baseColumns: ColumnDef<NormalizedTransaction>[] = [
@@ -90,19 +90,13 @@ export const baseColumns: ColumnDef<NormalizedTransaction>[] = [
     },
   },
   {
-    accessorKey: "accountId",
+    accessorKey: "accountType",
     header: "Account",
     cell: ({ row }) => {
       if (row.original === null) {
         return <div className="text-left">Unknown Account</div>
       }
-      const { accounts } = useUser()
-      const account = accounts.find((account) => account.id === row.original.accountId)
-      if (!account) {
-        return <Spinner className="size-4 animate-spin" />
-      }
-      const accountName = account?.type.charAt(0).toUpperCase() + account?.type.slice(1)
-      return <div className="text-left">{accountName}</div>
+      return <div className="text-left">{ row.original.accountType.charAt(0).toUpperCase() + row.original.accountType.slice(1) }</div>
     },
   },
 ]
@@ -137,7 +131,7 @@ export function generateCustomFieldColumns<NormalizedTransaction>(
           return <span className="text-muted-foreground">—</span>;
         return <span>{String(value)}</span>;
       },
-    } satisfies ColumnDef<NormalizedTransaction>;
+    }
   });
 }
 
@@ -171,6 +165,6 @@ export function actionColumn(): ColumnDef<NormalizedTransaction>[] {
           </>
         )
       },
-    } satisfies ColumnDef<NormalizedTransaction>,
+    }
   ];
 }
