@@ -153,7 +153,11 @@ export function NavMain({
                       <DialogDescription>WARNING: This action will delete all transactions associated with this account.</DialogDescription>
                       <div className="mt-2">
                         {selectedaccount?.id && user?.id && (
-                          <Button variant="destructive" onClick={() => { deleteAccount(selectedaccount?.id, user?.id); setIsDeleteDialogOpen(false); }}>Delete</Button>
+                          <Button variant="destructive" onClick={() => { 
+                            deleteAccount(selectedaccount?.id, user?.id); 
+                            setIsDeleteDialogOpen(false);}}>
+                            Delete
+                          </Button>
                         )}
                       </div>
                     </DialogContent>

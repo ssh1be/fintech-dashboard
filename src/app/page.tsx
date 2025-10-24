@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from "lucide-react"
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function Home() {
-  const { logout, user, accounts } = useUser();
+  const { logout, user, accounts, fetchUserTransactions } = useUser();
   const router = useRouter();
 
   useEffect(() =>{
     if (accounts.length > 0) {
       router.push('/dashboard');
+      fetchUserTransactions(user?.id || '');
     }
   }, [user, accounts])
 
@@ -22,7 +24,7 @@ export default function Home() {
       <div className="flex flex-col items-center">
         {user ? ( /* User signed in? */
           <>
-            {accounts.length === 0 && ( /* User account exists? */
+            {accounts.length === 0 ? ( /* User account exists? */
             <>
               <h1 className="text-5xl font-normal font-mono mt-20 fade-in">Welcome, {user?.name || 'User'}</h1>
               <h2 className="text-2xl font-normal font-mono text-muted-foreground mt-5 fade-in-slow">let's start by adding an account.</h2>
@@ -30,6 +32,11 @@ export default function Home() {
                 <AccountForm />
               </div>
             </>
+            ) : ( /* Loading if accounts not fetched  */
+            <div className="flex justify-center items-center h-screen text-2xl font-mono text-muted-foreground fade-in">
+              <Spinner className="size-10 animate-spin" />
+              <span className="ml-2">Loading...</span>
+            </div>
             )}
             <Button className="absolute top-3.5 right-5 border-none shadow-none font-mono text-muted-foreground hover:bg-stone-50" onClick={logout} variant="outline">Logout <LogOut className="size-4"/></Button>
           </>

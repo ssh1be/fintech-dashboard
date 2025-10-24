@@ -18,6 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
+  SidebarGroupLabel
 } from "@/components/ui/sidebar"
 import {
   Dialog,
@@ -30,6 +31,7 @@ import { AccountForm } from "@/components/account-form"
 import { useEffect } from "react"
 import { useUser } from "@/context/UserContext"
 import { AccountBalance } from "@/components/summary"
+import { Repeat } from "lucide-react"
 // Map account types to icons
 const accountIcons: Record<string, React.ElementType> = {
   checking: Wallet,
@@ -95,8 +97,8 @@ export function AccountSwitcher({
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Accounts
+            <DropdownMenuLabel className="text-muted-foreground text-xs flex flex-row items-center gap-2">
+              Accounts <Repeat className="size-3" />
             </DropdownMenuLabel>
             {accounts?.map((account, index) => {
               const Icon = accountIcons[account?.type || 'checking'] || Wallet

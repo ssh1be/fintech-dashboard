@@ -28,12 +28,15 @@ import { TransactionForm } from "@/components/transaction-form"
 import { normalizeTransactions } from "@/lib/transaction-utils"
 import { ColumnDef } from "@tanstack/react-table"
 import { Summary } from "@/components/summary"
+import { Chart1 } from "@/components/chart-line"
+import { Chart2 } from "@/components/chart-pie"
 
 export default function Page() {
   const { logout, user, transactions, selectedAccount, accounts } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+  const [shouldDisplayChart, setShouldDisplayChart] = useState(false);
+
   useEffect(() =>{
     if (!user) {
       router.push('/');
@@ -42,14 +45,15 @@ export default function Page() {
   
   const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions(transactions, accounts);
   const customColumns = generateCustomFieldColumns(normalizedTransactions);
-  console.log('normalizedTransactions', normalizedTransactions);
   // Combine base, custom field, and action columns
   const columns: ColumnDef<NormalizedTransaction>[] = [
     ...baseColumns,
     ...customColumns,
     ...actionColumn(),
   ];
-
+  setTimeout(() => {
+    setShouldDisplayChart(true);
+  }, 1500);
   return (
     <SidebarProvider>
       <AppSidebar 
@@ -66,19 +70,7 @@ export default function Page() {
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            {/* <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Home
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb> */}
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="flex flex-row gap-2" onSelect={(e) => e.preventDefault()}>
@@ -102,8 +94,18 @@ export default function Page() {
             <div className="bg-muted/100 aspect-video rounded-xl">
               <Summary transactions={normalizedTransactions} accounts={accounts} user={user} />
             </div>
-            <div className="bg-muted/75 aspect-video rounded-xl animate-pulse" />
-            <div className="bg-muted/50 aspect-video rounded-xl animate-pulse" />
+            <div className="bg-muted/100 aspect-video rounded-xl overflow-visible">
+              {shouldDisplayChart ? <Chart1 transactions={normalizedTransactions} accounts={accounts} /> 
+              : <div className="bg-white border-1 aspect-video rounded-xl animate-pulse flex justify-center items-center">
+                <Spinner className="size-10 animate-spin" />
+              </div>}
+            </div>
+            <div className="bg-muted/50 aspect-video rounded-xl">
+              {shouldDisplayChart ? <Chart2 />
+              : <div className="bg-white border-1 aspect-video rounded-xl animate-pulse flex justify-center items-center">
+                <Spinner className="size-10 animate-spin" />
+              </div>}
+            </div>
           </div>
           {transactions.length >= 0 ? (
             <div className="bg-transparent min-h-[100vh] flex-1 rounded-xl md:min-h-min text-muted-foreground fade-in">
