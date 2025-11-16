@@ -114,7 +114,7 @@ export function AccountSwitcher({
                   <div className="flex flex-col flex-1">
                     <span>{account?.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {AccountBalance({ account, transactions })} {user?.currency}
+                      {AccountBalance({ account, transactions }).toFixed(2)} {user?.currency}
                     </span>
                   </div>
                   <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

@@ -8,6 +8,8 @@ const UserContext = createContext<{
   user: User | null;
   accounts: Account[];
   transactions: Transaction[];
+  testTransactions: Transaction[];
+  setTestTransactions: (transactions: Transaction[]) => void;
   setUser: (user: User | null) => void;
   setAccounts: (accounts: Account[]) => void;
   addAccount: (account: Account) => void;
@@ -25,6 +27,8 @@ const UserContext = createContext<{
   user: null, 
   accounts: [],
   transactions: [],
+  testTransactions: [],
+  setTestTransactions: () => {},
   setUser: () => {},
   setAccounts: () => {},
   addAccount: () => {},
@@ -46,6 +50,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [testTransactions, setTestTransactions] = useState<Transaction[]>([]);
   // Load user and accounts from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -205,6 +210,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       user, 
       accounts, 
       transactions,
+      testTransactions,
+      setTestTransactions,
       setUser: updateUser, 
       setAccounts, 
       addAccount, 

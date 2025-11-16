@@ -12,21 +12,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 
 export function AccountBalance({ account, transactions }: { account: Account, transactions: NormalizedTransaction[] }) {
     const accountTransactions = transactions.filter((transaction) => transaction?.accountId === account?.id)
-    const totalBalance = account?.balance + (accountTransactions?.reduce((
+    const totalBalance = (accountTransactions?.reduce((
         acc,
         transaction
-    ) => transaction?.type === 'deposit' || transaction?.type === 'payment' || transaction?.type === 'buy' ? acc + transaction?.amount : acc - transaction?.amount, 0) ?? 0)
+    ) => (transaction?.type === 'deposit' || transaction?.type === 'payment' || transaction?.type === 'buy') ? acc + transaction?.amount : acc - transaction?.amount, 0) ?? 0)
     return totalBalance;
 }
 
 function lastXdBalancePercentage(transactions: NormalizedTransaction[], totalBalance: number, days: number) {
     const lastXd = transactions.filter((transaction) => new Date(transaction.date) > new Date(Date.now() - days * 24 * 60 * 60 * 1000))
     const lastXdBalance = lastXd.reduce((acc, transaction) =>
-        transaction?.type === 'deposit' ||
+        (transaction?.type === 'deposit' ||
             transaction?.type === 'payment' ||
-            transaction?.type === 'buy'
+            transaction?.type === 'buy') && transaction?.category !== 'Initial'
             ? acc + transaction?.amount
-            : acc - transaction?.amount, 0)
+            : transaction?.category === 'Initial' ? acc : acc - transaction?.amount, 0)
     const lastXdBalancePercentage = lastXdBalance / (totalBalance - lastXdBalance) * 100
     return Number(lastXdBalancePercentage)
 }

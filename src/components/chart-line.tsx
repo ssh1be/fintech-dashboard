@@ -21,7 +21,7 @@ function lastXMonths(transactions: NormalizedTransaction[], accounts: Account[],
             month: date.toLocaleDateString('en-US', { month: 'long' }),
             balance: transactions.filter((transaction) => 
                 new Date(transaction.date) <= new Date(date.getTime() + 30 * 24 * 60 * 60 * 1000)
-            ).reduce((acc, transaction) => transaction?.type === 'deposit' || transaction?.type === 'payment' || transaction?.type === 'buy' ? acc + transaction?.amount : acc - transaction?.amount, 0) + baseBalance,
+            ).reduce((acc, transaction) => transaction?.type === 'deposit' || transaction?.type === 'payment' || transaction?.type === 'buy' ? acc + transaction?.amount : acc - transaction?.amount, 0) ,
         }
     }).reverse()
     return lastXMonths

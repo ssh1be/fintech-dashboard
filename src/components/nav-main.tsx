@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, DollarSign, Plus, Upload, Trash, Landmark, FilePlus2, Pencil } from "lucide-react"
+import { ChevronRight, DollarSign, Plus, Upload, Trash, Landmark, FilePlus2, Pencil, Link, Merge } from "lucide-react"
 
 import {
   Collapsible,
@@ -26,6 +26,8 @@ import { AccountForm } from "./account-form"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { Account, User } from "@/lib/types"
 import { useUser } from "@/context/UserContext"
+import { TestPlaid } from "./test-plaid"
+import { toast } from "sonner"
 
 export function NavMain({
   selectedaccount,
@@ -38,6 +40,7 @@ export function NavMain({
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isAddAccountDialogOpen, setIsAddAccountDialogOpen] = useState(false)
+  const [isTestDialogOpen, setIsTestDialogOpen] = useState(false)
   const { deleteAccount } = useUser()
   return (
     <SidebarGroup>
@@ -97,6 +100,33 @@ export function NavMain({
                     </Tooltip>
                   </Dialog>
                 </SidebarMenuSubItem>
+                
+                <SidebarMenuSubItem>
+                  <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <SidebarMenuSubButton asChild className="flex flex-row" onSelect={(e) => e.preventDefault()}>
+                        <a href="#">
+                          <Merge className="h-4 w-4" />
+                          <span>Link</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto font-mono p-10 bg-stone-50">
+                      <DialogHeader>
+                        <DialogTitle>Link to an existing bank account?</DialogTitle>
+                      </DialogHeader>
+                      <DialogDescription>
+                        This action will load test transactions from Plaid Sandbox and add them to your account.
+                      </DialogDescription>
+                      <div className="mt-4">
+                        <TestPlaid onSuccess={() => {
+                          setIsTestDialogOpen(false);
+                          toast.success("Account linked successfully!");
+                        }} />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </SidebarMenuSubItem>
               </SidebarMenuSub>
             </CollapsibleContent>
           </SidebarMenuItem>
@@ -137,6 +167,18 @@ export function NavMain({
                   </Dialog>
                 </SidebarMenuSubItem>
                 <SidebarMenuSubItem>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <SidebarMenuSubButton asChild className="flex flex-row disabled" onSelect={(e) => e.preventDefault()}>
+                        <a href="#">
+                          <Pencil className="h-4 w-4" />
+                          <span>Edit</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </DialogTrigger>
+                  </Dialog>
+                </SidebarMenuSubItem>
+                <SidebarMenuSubItem>
                   <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                     <DialogTrigger asChild>
                       <SidebarMenuSubButton asChild className="flex flex-row" onSelect={(e) => e.preventDefault()}>
@@ -161,18 +203,6 @@ export function NavMain({
                         )}
                       </div>
                     </DialogContent>
-                  </Dialog>
-                </SidebarMenuSubItem>
-                <SidebarMenuSubItem>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <SidebarMenuSubButton asChild className="flex flex-row disabled" onSelect={(e) => e.preventDefault()}>
-                        <a href="#">
-                          <Pencil className="h-4 w-4" />
-                          <span>Edit</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </DialogTrigger>
                   </Dialog>
                 </SidebarMenuSubItem>
               </SidebarMenuSub>

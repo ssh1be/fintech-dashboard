@@ -6,10 +6,9 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
         console.log('Received body:', body);
-        const id = crypto.randomUUID()
 
         const newAccount = {
-            id: id,
+            id: body.id,
             userId: body.userId,
             name: body.name,
             type: body.type,

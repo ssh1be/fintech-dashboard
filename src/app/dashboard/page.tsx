@@ -32,7 +32,7 @@ import { Chart1 } from "@/components/chart-line"
 import { Chart2 } from "@/components/chart-pie"
 
 export default function Page() {
-  const { logout, user, transactions, selectedAccount, accounts } = useUser();
+  const { logout, user, transactions, selectedAccount, accounts, testTransactions } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [shouldDisplayChart, setShouldDisplayChart] = useState(false);
@@ -42,8 +42,7 @@ export default function Page() {
       router.push('/');
     }
   }, [user])
-  
-  const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions(transactions, accounts);
+  const normalizedTransactions: NormalizedTransaction[] = normalizeTransactions([...transactions, ...testTransactions], accounts);
   const customColumns = generateCustomFieldColumns(normalizedTransactions);
   // Combine base, custom field, and action columns
   const columns: ColumnDef<NormalizedTransaction>[] = [
@@ -60,7 +59,7 @@ export default function Page() {
         user={user} 
         accounts={accounts} 
         selectedaccount={selectedAccount} 
-        transactions={transactions} 
+        transactions={normalizedTransactions} 
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 font-mono">
@@ -101,7 +100,7 @@ export default function Page() {
               </div>}
             </div>
             <div className="bg-muted/50 aspect-video rounded-xl">
-              {shouldDisplayChart ? <Chart2 />
+              {shouldDisplayChart ? <Chart2 transactions={normalizedTransactions} />
               : <div className="bg-white border-1 aspect-video rounded-xl animate-pulse flex justify-center items-center">
                 <Spinner className="size-10 animate-spin" />
               </div>}

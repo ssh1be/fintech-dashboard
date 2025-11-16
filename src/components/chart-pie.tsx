@@ -18,10 +18,8 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart"
 import { NormalizedTransaction } from "./transaction-columns"
-import { useUser } from "@/context/UserContext"
 
-function generateChartConfig() {
-    const { transactions } = useUser()
+function generateChartConfig(transactions: NormalizedTransaction[]) {
     const chartConfig: ChartConfig = {}
     chartConfig.balance = {
         label: "Balance",
@@ -33,6 +31,11 @@ function generateChartConfig() {
     categories.forEach((category) => {
         const color = `rgb(${newColor.r}, ${newColor.g}, ${newColor.b})`
         uniqueColors.push(color)
+        if (newColor.r > 220) {
+            newColor.r = 50
+            newColor.g = 50
+            newColor.b = 50
+        }
         newColor.r += 25
         newColor.g += 25
         newColor.b += 25
@@ -47,22 +50,28 @@ function generateChartConfig() {
     return chartConfig
 }
 
-function generateChartData() {
-    const { transactions } = useUser()
-    const chartConfig = generateChartConfig()
+function generateChartData(transactions: NormalizedTransaction[]) {
+    const chartConfig = generateChartConfig(transactions)
     const chartData: { category: string, amount: number, fill: string }[] = []
     transactions.forEach((transaction) => {
         if (transaction?.category && transaction.type !== "deposit" && transaction.type !== "payment") {
-        chartData.push({ category: transaction?.category ?? "", amount: transaction?.amount ?? 0, fill: chartConfig[transaction?.category ?? ""]?.color ?? "" })
-    }
+            if (chartData.find((item) => item.category === transaction?.category) === undefined) {
+                chartData.push({ category: transaction?.category ?? "", amount: transaction?.amount ?? 0, fill: chartConfig[transaction?.category ?? ""]?.color ?? "" })
+            } else {
+                const item = chartData.find((item) => item.category === transaction?.category)
+                if (item) {
+                    item.amount += transaction?.amount ?? 0
+                }
+            }
+        }
     })
     return chartData
 }
 
 
-export function Chart2() {
-    const chartConfig = generateChartConfig()
-    const chartData = generateChartData()
+export function Chart2({ transactions }: { transactions: NormalizedTransaction[] }) {
+    const chartConfig = generateChartConfig(transactions)
+    const chartData = generateChartData(transactions)
     return (
         <Card className="flex flex-col shadow-none h-full w-full fade-in overflow-hidden">
             <CardHeader className="items-center pb-0">
@@ -82,7 +91,7 @@ export function Chart2() {
                                 cursor={false}
                                 content={<ChartTooltipContent indicator="line" />}
                             />
-                            <Pie data={chartData} dataKey="amount" nameKey="category" fill="fill" opacity={0.8} />
+                            <Pie data={chartData} dataKey="amount" nameKey="category" fill="fill" opacity={0.9} />
                         </PieChart>
                     </ChartContainer>
                 ) : (

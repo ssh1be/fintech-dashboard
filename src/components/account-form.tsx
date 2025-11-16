@@ -36,20 +36,49 @@ export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, 
             apr: undefined,
         }
     })
-
-    const { user, addAccount, fetchUserAccounts } = useUser();
     const accountType = form.watch("type");
+    const { user, addAccount, fetchUserAccounts, addTransaction, fetchUserTransactions } = useUser();
+    
+    async function addFirstTransaction(amount: number, accountId: string) {
+        if (!user) return;
+        try {
+            const createResoponse = await fetch('/api/transactions', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    amount: amount,
+                    type: 'deposit',
+                    date: new Date().toISOString(),
+                    category: 'Initial',
+                    customFields: undefined,
+                    accountId: accountId,
+                }),
+            });
+            
+            if (!createResoponse.ok) throw new Error('Failed to add transaction');
 
+            const transaction = await createResoponse.json();
+            addTransaction(transaction);
+            fetchUserTransactions(user.id);
+            console.log('Added transaction:', transaction)
+            return transaction;
+        } catch (error){
+            toast.error("Something went wrong adding the first transaction");
+            return null;
+        }
+    }
+    
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user) return;
-
         try {
+            const accountId = crypto.randomUUID();
             const createResoponse = await fetch('/api/accounts', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({
                     ...values, 
                     userId: user.id,
+                    id: accountId,
                 }),
             });
             
@@ -60,7 +89,11 @@ export function AccountForm({ onSuccess, className }: { onSuccess?: () => void, 
             fetchUserAccounts(user.id);
             console.log('Created account:', account)
             toast.success("Account created successfully!");
-            form.reset();
+            const transaction = await addFirstTransaction(values.balance, accountId);
+            if (transaction) {
+                form.reset();
+                onSuccess?.();
+            }
             onSuccess?.();
         } catch (error){
             toast.error("Something went wrong");
