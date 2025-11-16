@@ -2,8 +2,6 @@
 
 A full-stack personal finance management application built with Next.js, TypeScript, and Supabase. This project demonstrates modern web development practices and financial data visualization.
 
-## Demo
-
 ![Personal Finance Dashboard Demo](./public/demo.gif)
 
 *Dashboard featuring real-time balance tracking, transaction management, and interactive data visualization*
